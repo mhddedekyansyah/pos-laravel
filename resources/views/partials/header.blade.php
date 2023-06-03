@@ -35,9 +35,11 @@
         {{-- * Toastr CDN--}}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
         {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
-  
+        
+        
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script> --}}
         <!-- third party css end -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
         @stack('styles')
     </head>
 

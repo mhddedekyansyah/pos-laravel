@@ -1,2 +1,3 @@
-<button onclick="editForm(`{{ route('category.edit', $data) }}`, `{{ route('category.update', $data) }}`)" class="edit btn btn-success btn-sm">Edit</button>
-<button onclick="deleteData(`{{ route('category.destroy', $data) }}`)" class="delete btn btn-danger btn-sm">Delete</button>
+<button type="button" onclick="show(`{{ route('product.show', $data) }}`)" class="show btn btn-primary btn-sm">View</button>
+<button type="button" onclick="editForm(`{{ route('product.edit', $data) }}`, `{{ route('product.update', $data) }}`)" class="edit btn btn-success btn-sm">Edit</button>
+<button type="button" onclick="deleteData(`{{ route('product.destroy', $data) }}`)" class="delete btn btn-danger btn-sm">Delete</button>

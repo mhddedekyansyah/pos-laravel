@@ -2,8 +2,12 @@
 
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,10 +43,28 @@ Route::prefix('dashboard')->middleware(['auth', 'verified'])->group(function(){
     // * Category Route
     Route::get('/category/data', [CategoryController::class, 'data'])->name('category.data');
     Route::post('/category/delete-all', [CategoryController::class, 'deleteMultiple'])->name('category.delete-all');
-    Route::resource('/category', CategoryController::class)->except('create');
+    Route::resource('/category', CategoryController::class)->except('create', 'show');
 
     // * Product Route
-    Route::resource('/product', ProductController::class);
+    Route::get('/product/data', [ProductController::class, 'data'])->name('product.data');
+    Route::post('/product/delete-all', [ProductController::class, 'deleteMultiple'])->name('product.delete-all');
+    Route::resource('/product', ProductController::class)->except('create');
+
+    // * Supplier Route
+    Route::get('/supplier/data', [SupplierController::class, 'data'])->name('supplier.data');
+    Route::resource('/supplier', SupplierController::class);
+
+    // * Customer Route
+    Route::get('/customer/data', [CustomerController::class, 'data'])->name('customer.data');
+    Route::resource('/customer', CustomerController::class);
+
+    // * Stock Route
+    Route::get('/stock/data', [StockController::class, 'data'])->name('stock.data');
+    Route::resource('/stock', StockController::class);
+
+    // * Permission Route
+    Route::get('/permission/data', [PermissionController::class, 'data'])->name('permission.data');
+    Route::resource('/permission', PermissionController::class);
 });
 
 

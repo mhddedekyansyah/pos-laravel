@@ -1,0 +1,2 @@
+<button type="button" onclick="editForm(`{{ route('permission.edit', $data) }}`, `{{ route('permission.update', $data) }}`)" class="edit btn btn-success btn-sm">Edit</button>
+<button type="button" onclick="deleteData(`{{ route('permission.destroy', $data) }}`)" class="delete btn btn-danger btn-sm">Delete</button>

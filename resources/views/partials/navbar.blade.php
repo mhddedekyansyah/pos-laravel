@@ -5,8 +5,7 @@
     
                         <li class="dropdown notification-list topbar-dropdown">
                             <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="{{ url(Auth::user()->photo) }}" alt="user-image" class="rounded-circle image-profile">
-                                <span class="pro-user-name ms-1">
+                                <img src="{{ empty(Auth::user()->image->image) ? asset('assets/images/no_image.jpg') : Storage::url(Auth::user()->image->image) }}" alt="user-image" class="rounded-circle image-profile">
                                    {{ Auth::user()->name }}<i class="mdi mdi-chevron-down"></i> 
                                 </span>
                             </a>

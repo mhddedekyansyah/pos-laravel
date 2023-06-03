@@ -27,10 +27,10 @@
                             <div class="col-lg-4 col-xl-4">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <img id="image-profile" src="{{ empty($user->photo) ? asset('assets/images/no_image.jpg') : url($user->photo) }}" class="rounded-circle avatar-lg img-thumbnail"
+                                        <img id="image-profile" src="{{ empty($user->image) ? asset('assets/images/no_image.jpg') : Storage::url($user->image->image) }}" class="rounded-circle avatar-lg img-thumbnail"
                                         alt="profile-image">
 
-                                        <h4 class="mb-0" id="profile-name">{{ $user->name }}</h4>
+                                        <h4 class="mb-0" id="profile-name">{{ $user->name ?? '-' }}</h4>
                                         <p class="text-muted">@webdesigner</p>
 
                                         
@@ -83,10 +83,10 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label for="photo" class="form-label">Photo</label>
-                                                            <input type="file" name="photo" id="photo" class="form-control">
+                                                            <label for="image" class="form-label">Image</label>
+                                                            <input type="file" name="image" id="image" class="form-control">
                                                             <small class="text-muted"><p class="text-danger" id="name-error"></p></small>
-                                                            <img id="imgPreview" src="{{ empty($user->photo) ? asset('assets/images/no_image.jpg') : url($user->photo) }}" alt="pic" class="mt-3 rounded-circle avatar-lg img-thumbnail"/>
+                                                            <img id="image-preview" src="{{ empty($user->image) ? asset('assets/images/no_image.jpg') : Storage::url($user->image->image) }}" alt="pic" class="mt-3 rounded-circle avatar-lg img-thumbnail"/>
                                                         </div>
                                                     </div> <!-- end row -->
     
@@ -109,15 +109,14 @@
 @push('scripts')
     <script>    
 $(document).ready(()=>{
-      $('#photo').change(function(){
+      $('#image').change(function(){
         const file = this.files[0];
        
         if (file){
           let reader = new FileReader();
           reader.onload = function(event){
            
-            $('#imgPreview').attr('src', event.target.result);
-            $('#imgPreview').removeClass('d-none')
+            $('#image-preview').attr('src', event.target.result);
           }
           reader.readAsDataURL(file);
         }
@@ -138,7 +137,6 @@ $(document).ready(()=>{
                 url: '{{ route("profile.update") }}',
                 type: 'POST',
                 data: formData,
-                type: 'POST',
                 dataType: 'json',
                 contentType: false,
                 cache: false,
@@ -148,8 +146,11 @@ $(document).ready(()=>{
                     showAlert(res.message, 'success')
                     resetForm(form)
                     $('#profile-name').text(res.data.name)
-                    $('#image-profile').attr('src', `{{ url('/') }}/${res.data.photo}`)
-                    $('.image-profile').attr('src', `{{ url('/') }}/${res.data.photo}`)
+                    if(res.data.image){
+                        $('#image-profile').attr('src', `{{ Storage::url('${res.data.image.image}') }}`)
+                        $('.image-profile').attr('src', `{{ Storage::url('${res.data.image.image}') }}`)
+                    }
+ 
                     $.each(res.data, function(name, value){
                         $(`.${name}`).text(value)
                         $(`[name=${name}]`).val(value)

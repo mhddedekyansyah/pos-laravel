@@ -25,23 +25,28 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="d-flex mb-3">
-                                            
-                                        <button onclick="addForm(`{{ route('category.store') }}`)" class="btn btn-primary waves-effect waves-light add-category" >Add Category </button>
-                                     
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <button onclick="deleteMultiple('{{ route('product.delete-all') }}')" class="btn btn-danger btn-sm delete-all">Delete</button>
+                                            <button onclick="addForm(`{{ route('product.store') }}`)" class="btn btn-primary btn-sm add-product" >Add Product </button>
                                         </div>
-                                        <table id="table" class="table dt-responsive nowrap w-100">
+                                        <form id='form'>
+                                            <table id="table" class="table dt-responsive nowrap w-100">
                                             <thead>
                                                 <tr>
                                                     <th width="5%">
                                                         <input type="checkbox" name="select_all" id="select_all">
                                                     </th>
                                                     <th>No</th>
+                                                    <th>Product Code</th>
                                                     <th>Name</th>
+                                                    <th>Stock</th>
+                                                    <th>Buying Date</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
                                         </table>
+                                        </form>
+                                        
                                     </div> <!-- end card body-->
                                 </div> <!-- end card -->
                             </div><!-- end col-->
@@ -52,23 +57,53 @@
                     </div> <!-- container -->
 
                 </div>
-                @include('pages.category.form')
+                @include('pages.product.show')
+                @include('pages.product.form')
 @endsection
 
-{{-- @push('scripts')
+
+
+@push('scripts')
     <script>
       $(document).ready(function(){
-        
+        $('#datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true
+        });
+
+        $('#image').change(function(){
+        const file = this.files[0];
+       
+        if (file){
+          let reader = new FileReader();
+          reader.onload = function(event){
+           
+            $('#image-preview').attr('src', event.target.result);
+          }
+          reader.readAsDataURL(file);
+        }
+      });
+
         // Reload DataTables
         $('#table').DataTable({
+            responsive: true,
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('category.data') }}",
+                url: "{{ route('product.data') }}",
             },
             columns: [
+                 {
+                    data: 'select_all', 
+                    name: 'select_all', 
+                    orderable: false, 
+                    searchable: false,
+                },
                 {data: 'DT_RowIndex', name: 'DT_RowIndex',  orderable: false, searchable: false,},
-                {data: 'category_name', name: 'category_name'},
+                {data: 'product_code', name: 'product_code'},
+                {data: 'product_name', name: 'product_name'},
+                {data: 'stock.stock', name: 'stock.stock'},
+                {data: 'buying_date', name: 'buying_date'},
                 {
                     data: 'action', 
                     name: 'action', 
@@ -79,17 +114,17 @@
         })
       })
 
-    //   Add Modal Category
+    //   Add Modal product
     function addForm(url){
-        $('#modal-category').modal('show');
-        $('#modal-category .modal-title').text('Create Category');
-        $('#modal-category form').attr('action', url);
-        $('#modal-category [name=_method]').val('POST');
-        let form = $('#form-category')[0];
+        $('#modal-product').modal('show');
+        $('#modal-product .modal-title').text('Create product');
+        $('#modal-product form').attr('action', url);
+        $('#modal-product [name=_method]').val('POST');
+        let form = $('#form-product')[0];
         resetForm(form);
     }
 
-    //   Delete Category
+    //   Delete product
     function deleteData(url){
          Swal.fire({
             title: 'Are you sure?',
@@ -99,7 +134,7 @@
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!'
-}).then((result) => {
+        }).then((result) => {
   if (result.isConfirmed) {
      $.ajax({
             url,
@@ -122,21 +157,26 @@
     }
 
 
- // Edit Category
+ // Edit product
  function editForm(urlEdit, urlUpdate){
         $.ajax({
             url: urlEdit,
             success: function(res){
                 console.log(res.data)
-                $('#modal-category').modal('show');
-                $('#modal-category .modal-title').text('Edit Category');
-                $('#modal-category form').attr('action', urlUpdate);
-                $('#modal-category [name=_method]').val('put');
+                $('#modal-product').modal('show');
+                $('#modal-product .modal-title').text('Edit product');
+                $('#modal-product form').attr('action', urlUpdate);
+                $('#modal-product [name=_method]').val('put');
 
-                let form = $('#form-category')[0];
+                let form = $('#form-product')[0];
                 resetForm(form);
                 $.each(res.data, function(name, value){
-                    $(`[name=${name}`).val(res.data.category_name);
+                  
+                    if($(`[name=${name}`).attr('type') != 'file'){
+                            $(`[name=${name}`).val(value)
+                    }else{
+                        $(`#${name}-preview`).attr('src', `{{ Storage::url('${value[name]}') }}`)
+                    }
                 })
               
             },
@@ -145,10 +185,10 @@
                 console.log(err)
             }
         })
-}
+    }
     
 
-    //   Save Category
+    //   Save product
     function submitForm(form){
 
         $.ajax({
@@ -160,7 +200,7 @@
             cache: false,
             processData: false,
             success: function(res){
-                $('#modal-category').modal('hide');
+                $('#modal-product').modal('hide');
                 showAlert(res.message, res.type);
                 $('#table').DataTable().ajax.reload();
                 console.log(res)
@@ -174,16 +214,51 @@
             }
         })
     }
-  
-      
-        function resetForm(form){
-            $('#modal-category').modal('hide');
+    
+    
+    // Show Product
+    function show(url){
+        $('#show').modal('show')
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            cache: false,
+            processData: false,
+            success: function(res){
+                console.log(res.data)
+                $(`#image-product`).attr('src',  `{{ Storage::url('${res.data.image.image}') }}`)
+                $.each(res.data, function(name, value){
+                    if(name == 'category'){
+                        $(`#${name}`).text(value.category_name)
+                    }else if(name == 'supplier'){
+                        $(`#${name}`).text(value.supplier_name)
+                    }else if(name == 'stock'){
+                        $(`#${name}`).text(value.stock)
+                    }else if(name == 'buying_price' || name == 'selling_price'){
+                        let numberFormat = new Intl.NumberFormat('id-ID', { maximumSignificantDigits: 3,  style: "currency", currency: "IDR" }).format(value)
+                        $(`#${name}`).text(numberFormat)
+                    }else{
+                        $(`#${name}`).text(value)
+                    }  
+                })
+
+            },
+            error: function(err){
+                showAlert(err.message, 'error')
+                console.log(err)
+            }
+        })
+    }
+   
+    function resetForm(form){
+            $('#modal-product').modal('hide');
             $('.form-control').removeClass('is-invalid')
             $('.invalid-feedback').remove()
+            $(`#image-preview`).attr('src', `{{ asset('assets/images/no_image.jpg') }}`)
             form.reset();
-        }
+    }
 
-        function showAlert(message, type){
+    function showAlert(message, type){
             toastr.options= {
              "progressBar":true,
              "positionClass":"toast-top-right",
@@ -202,9 +277,9 @@
                toastr.error(message, 'Failed !');
             }
             toastr.success(message, 'Success !');
-        }
+    }
 
-        function loopErrors(errors){
+    function loopErrors(errors){
             $('.invalid-feedback').remove();
 
             if(errors == undefined){
@@ -212,11 +287,79 @@
             }
 
              $.each(errors, function(name, value){
-                    $(`#${name}`).addClass('is-invalid')
-                    $(`<small class="text-danger invalid-feedback">${value[0]}</small>`).insertAfter(`#${name}`)
-                       
+                 $(`[name=${name}]`).addClass('is-invalid')
+                    if($(`[name=${name}]`).hasClass('.input-group')){
+                        $(`<small class="text-danger invalid-feedback">${value[0]}</small>`).insertAfter('input-group-append').next()
+                    }else{
+                 
+                        $(`<small class="text-danger invalid-feedback">${value[0]}</small>`).insertAfter(`[name=${name}]`)
+                    }    
                 return;
             })
-        }   
+    }   
+
+         $('#select_all').on('click', function() {
+            if($(this).is(':checked', true)){
+               
+                $(".checkbox").prop('checked', true);  
+            } else {  
+                $(".checkbox").prop('checked', false);  
+               
+            } 
+        });
+
+        $('body').on('click', '.checkbox', function(){
+            if($('.checkbox:checked').length == $('.checkbox').length){
+                $('#select_all').prop('checked', true);
+            }else{
+                $('#select_all').prop('checked', false);
+            }
+        });
+
+
+        function deleteMultiple(url){
+            console.log($('#form')[0])
+            if($('input:checked').length > 1){
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                let form = $('#form')[0];
+                $.ajax({
+                        url,
+                        data: new FormData(form),
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        success: function(res){
+                            showAlert(res.message, res.type);
+                            $('#table').DataTable().ajax.reload();
+                            $('#select_all:checked').prop('checked', false)
+                            console.log(res)
+                        },
+                        error: function(err){
+                            console.log(err)
+                        }
+                    })
+                }
+            })
+        }else{
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'No row selected!',
+                    })
+                      $('#select_all:checked').prop('checked', false)
+                }
+            
+    }
     </script>
-@endpush --}}
+@endpush

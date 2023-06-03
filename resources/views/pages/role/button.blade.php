@@ -1,0 +1,1 @@
+<button type="button" onclick="editForm(`{{ route('stock.edit', $data) }}`, `{{ route('stock.update', $data) }}`)" class="edit btn btn-success btn-sm">Edit</button>

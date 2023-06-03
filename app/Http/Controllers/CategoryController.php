@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -13,18 +14,19 @@ class CategoryController extends Controller
     public function data(Request $request)
     {
      
-        $categories = Category::query();
+        $query = Category::query();
         if($request->ajax()){
-            return DataTables::of($categories)
+            return DataTables::of($query)
                     ->addIndexColumn()
-                    ->addColumn('select_all', function ($category) {
+                    ->addColumn('select_all', function ($data) {
                         return '
-                            <input type="checkbox" class="checkbox" name="ids[]" value="'. $category->id .'">
+                            <input type="checkbox" class="checkbox" name="ids[]" value="'. $data->id .'">
                         ';
                     })
                     ->addColumn('action', function($data){
                         return view('pages.category.button', compact('data'));
                     })
+                    
                     ->rawColumns(['action', 'select_all'])
                     ->make(true);
         }
@@ -58,9 +60,9 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request)
     {
         if($request->ajax()){
-            $data = $request->validated();
-            $data['slug'] = Str::slug($data['category_name']);
             
+            $data = $request->validated();
+            $data['slug'] = $data['category_name'];
             Category::create($data);
 
             return response()->json([

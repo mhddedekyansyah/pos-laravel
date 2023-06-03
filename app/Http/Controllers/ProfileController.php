@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Image;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -18,9 +21,8 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('pages.profile.index', [
-            'user' => $request->user(),
-        ]);
+        $user = User::where('id', Auth::user()->id)->first();
+        return view('pages.profile.index', compact('user'));
     }
 
     /**
@@ -29,47 +31,37 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request)
     {
       
-        try {
-          
-        $path = 'upload/images/';
-        if($request->file('photo')){
-            $file = $request->file('photo');
-            $filename = time() . $file->getClientOriginalName();
-            $file->move(public_path($path), $filename);
+        if($request->ajax()){
+            DB::beginTransaction();
+             try {
+                $id = Auth::user()->id;
+                $user = User::findOrFail($id);
+                if($request->file('image')){
+                    if (Storage::disk('public')->exists($user->image->image)) {
+                        Storage::disk('public')->delete($user->image->image);
+                    }
+                    $file = $request->file('image');
+                    $image = upload('user', $file, 'user');   
 
-            $id = Auth::user()->id;
-            $user = User::findOrFail($id);
-            $user->update([
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'photo' => $path . $filename,
-            ]);
+                    $user->image()->updateOrCreate([],['image' =>  $image]);
+                }
 
-            return response()->json([
-                    'type' => 'success',
-                    'data' => $user,
-                    'message' => 'Profile updated successfully'
+                    $user->update($request->validated());
+
+                    DB::commit();
+                    return response()->json([
+                            'type' => 'success',
+                            'data' => $user->load('image'),
+                            'message' => 'Profile Updated succesfully'
+                    ]);
+              
+                } catch (Exception $err) {
+                    DB::rollBack();
+                    return response()->json([
+                    'type' => 'error',
+                    'message' => $err
             ]);
         }
-            $id = Auth::user()->id;
-            $user = User::findOrFail($id);
-            $user->update([
-                'name' => $request->name,
-                'phone' => $request->phone,
-            ]);
-
-            return \response()->json([
-                    'type' => 'success',
-                    'data' => $user,
-                    'message' => 'Profile Berhasil di ubah'
-            ]);
-        
-
-        } catch (Exception $err) {
-            return response()->json([
-            'type' => 'error',
-            'message' => $err
-       ]);
         }
        
     }

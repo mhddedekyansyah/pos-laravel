@@ -25,12 +25,11 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col">
-                                                <button onclick="addForm(`{{ route('category.store') }}`)" class="btn btn-primary btn-sm add-category" >Add Category </button>
-                                                <button onclick="deleteMultiple('{{ route('category.delete-all') }}')" class="btn btn-danger btn-sm delete-all">Delete</button>
-                                            </div>
-                                            
+                                        <div class="d-flex justify-content-between mb-3">
+                                       
+                                            <button onclick="deleteMultiple('{{ route('category.delete-all') }}')" class="btn btn-danger btn-sm delete-all">Delete</button>
+                                            <button onclick="addForm(`{{ route('category.store') }}`)" class="btn btn-primary btn-sm add-category" >Add Category </button>
+                                         
                                         </div>
                                         <form id='form'>
                                             <table id="table" class="table dt-responsive nowrap w-100">
